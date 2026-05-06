@@ -143,7 +143,11 @@ class OrderViewSet(viewsets.ModelViewSet):
             **serializer.validated_data
         )
 
-        logger.info(f"Payment slip uploaded for {order.order_number}")
+        # เปลี่ยนสถานะ order → PAID
+        order.status = 'PAID'
+        order.save(update_fields=['status', 'updated_at'])
+
+        logger.info(f"Payment slip uploaded for {order.order_number} — status → PAID")
         return Response({'message': 'อัปโหลดสลิปสำเร็จ รอผู้ขายตรวจสอบ'})
 
     # --- Seller Actions ---
@@ -180,13 +184,15 @@ class OrderViewSet(viewsets.ModelViewSet):
         payment.note = serializer.validated_data.get('note', '')
         payment.save()
 
-        # ถ้า verify → อัปเดตสถานะ order เป็น PAID
-        if payment.status == 'VERIFIED':
-            order.status = 'PAID'
-            order.save(update_fields=['status'])
+        # ถ้า REJECTED → กลับไป PENDING ให้ buyer ส่งสลิปใหม่
+        if payment.status == 'REJECTED':
+            order.status = 'PENDING'
+            order.save(update_fields=['status', 'updated_at'])
+            # ลบ payment เก่าเพื่อให้ส่งสลิปใหม่ได้
+            payment.delete()
 
-        logger.info(f"Payment {payment.status} for {order.order_number}")
-        return Response({'message': f'สลิป {payment.status}', 'order_status': order.status})
+        logger.info(f"Payment {serializer.validated_data['action']} for {order.order_number}")
+        return Response({'message': f'สลิป {serializer.validated_data["action"]}', 'order_status': order.status})
 
     @action(detail=True, methods=['post'])
     def delivery_slip(self, request, pk=None):
@@ -242,3 +248,28 @@ class OrderViewSet(viewsets.ModelViewSet):
             DeliverySlipSerializer(slip).data,
             status=status.HTTP_201_CREATED
         )
+
+    @action(detail=True, methods=['post'])
+    def confirm_received(self, request, pk=None):
+        """
+        POST /api/orders/{id}/confirm_received/
+        ผู้ซื้อยืนยันว่าได้รับสินค้าแล้ว (SHIPPED → COMPLETED)
+        """
+        order = self.get_object()
+
+        # ตรวจสิทธิ์: ต้องเป็นผู้ซื้อ
+        if order.buyer != request.user:
+            return Response({'error': 'ไม่ใช่ order ของคุณ'}, status=status.HTTP_403_FORBIDDEN)
+
+        # ตรวจสถานะ: ต้องเป็น SHIPPED
+        if order.status != 'SHIPPED':
+            return Response(
+                {'error': f'สถานะ order ไม่ถูกต้อง (ปัจจุบัน: {order.status})'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        order.status = 'COMPLETED'
+        order.save(update_fields=['status', 'updated_at'])
+
+        logger.info(f"Order {order.order_number} COMPLETED by {request.user.username}")
+        return Response({'message': 'ยืนยันรับสินค้าสำเร็จ', 'order_status': 'COMPLETED'})

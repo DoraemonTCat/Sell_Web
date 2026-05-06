@@ -56,7 +56,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             'payment_method', 'status', 'note',
             'paid_at', 'created_at'
         ]
-        read_only_fields = ['id', 'status', 'note', 'created_at']
+        read_only_fields = ['id', 'status', 'note', 'paid_at', 'created_at']
 
 
 class PaymentVerifySerializer(serializers.Serializer):

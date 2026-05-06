@@ -235,19 +235,23 @@
         const res = await apiFetch(`/orders/${selectedOrderId}/upload_slip/`, {
           method: 'POST',
           body: formData,
-          headers: { 'Authorization': `Bearer ${TokenStore.getAccess()}` }
         });
         const data = await res.json();
+        console.log('Upload slip response:', res.status, data);
 
         if (res.ok) {
           showToast('ส่งสลิปสำเร็จ! รอผู้ขายตรวจสอบ');
           closeSlipModal();
           loadOrders();
         } else {
-          showToast(data.error || 'เกิดข้อผิดพลาด', 'error');
+          // แสดง error ละเอียด
+          const errMsg = data.error || data.detail || JSON.stringify(data);
+          showToast(errMsg, 'error');
+          console.error('Upload slip error:', data);
         }
       } catch (err) {
-        showToast('เกิดข้อผิดพลาด', 'error');
+        console.error('Upload slip exception:', err);
+        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
       } finally {
         btn.disabled = false;
         btn.textContent = 'ส่งสลิป';
@@ -258,10 +262,11 @@
     async function confirmReceived(orderId) {
       if (!confirm('ยืนยันว่าได้รับสินค้าแล้ว?')) return;
       try {
-        // Note: ต้องเพิ่ม API endpoint สำหรับ confirm received
-        showToast('ยืนยันรับสินค้าสำเร็จ!');
+        const data = await api.post(`/orders/${orderId}/confirm_received/`, {});
+        showToast(data.message || 'ยืนยันรับสินค้าสำเร็จ!');
         loadOrders();
-      } catch {
+      } catch (err) {
+        console.error('Confirm received error:', err);
         showToast('เกิดข้อผิดพลาด', 'error');
       }
     }
