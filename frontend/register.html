@@ -52,6 +52,17 @@
             <label for="reg-address">ที่อยู่จัดส่ง</label>
             <textarea id="reg-address" class="form-input" rows="3" placeholder="บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์" required></textarea>
           </div>
+          <div class="form-group">
+            <label>คุณต้องการ</label>
+            <div style="display:flex;gap:12px;margin-top:6px;">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:10px 16px;border:2px solid var(--color-border);border-radius:8px;flex:1;justify-content:center;" id="role-buyer-label">
+                <input type="radio" name="role" value="buyer" checked onchange="updateRoleStyle()"> 🛒 ซื้อสินค้า
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:10px 16px;border:2px solid var(--color-border);border-radius:8px;flex:1;justify-content:center;" id="role-seller-label">
+                <input type="radio" name="role" value="seller" onchange="updateRoleStyle()"> 🏪 ขายสินค้า
+              </label>
+            </div>
+          </div>
           <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;" id="register-btn">บันทึกข้อมูล</button>
         </form>
 
@@ -79,9 +90,11 @@
       btn.textContent = 'กำลังบันทึก...';
 
       try {
+        const role = document.querySelector('input[name="role"]:checked').value;
         const data = await api.patch('/auth/register/', {
           username: document.getElementById('reg-username').value,
           address: document.getElementById('reg-address').value,
+          role: role,
         });
 
         if (data.id) {
@@ -100,6 +113,14 @@
         btn.textContent = 'บันทึกข้อมูล';
       }
     }
+
+    // Role toggle style
+    function updateRoleStyle() {
+      const val = document.querySelector('input[name="role"]:checked').value;
+      document.getElementById('role-buyer-label').style.borderColor = val === 'buyer' ? 'var(--color-primary)' : 'var(--color-border)';
+      document.getElementById('role-seller-label').style.borderColor = val === 'seller' ? 'var(--color-primary)' : 'var(--color-border)';
+    }
+    updateRoleStyle();
 
     // Redirect if not logged in
     if (!UserStore.isLoggedIn()) {

@@ -37,6 +37,18 @@ class User(AbstractUser):
         help_text="User's shipping/billing address"
     )
 
+    # Role: buyer or seller
+    ROLE_CHOICES = [
+        ('buyer', 'ผู้ซื้อ'),
+        ('seller', 'ผู้ขาย'),
+    ]
+    role = models.CharField(
+        max_length=10,
+        choices=ROLE_CHOICES,
+        default='buyer',
+        help_text="User role: buyer or seller"
+    )
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

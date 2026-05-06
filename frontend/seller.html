@@ -257,6 +257,11 @@
   <script src="/js/auth.js"></script>
   <script>
     if (!UserStore.isLoggedIn()) window.location.href = '/login.html';
+    const _user = UserStore.get();
+    if (_user && _user.role !== 'seller') {
+      showToast('เฉพาะผู้ขายเท่านั้นที่เข้าถึงร้านค้าได้', 'error');
+      window.location.href = '/';
+    }
 
     let sellerOrders = [];
     let sellerOrderFilter = 'all';

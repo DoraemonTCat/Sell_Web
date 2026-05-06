@@ -49,7 +49,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ['username', 'address']
+        fields = ['username', 'address', 'role']
 
     def validate_username(self, value):
         """ตรวจสอบ username ซ้ำ (ไม่นับ user ปัจจุบัน)."""
@@ -64,7 +64,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'address',
+            'id', 'username', 'email', 'address', 'role',
             'avatar_url', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'email', 'avatar_url', 'created_at', 'updated_at']

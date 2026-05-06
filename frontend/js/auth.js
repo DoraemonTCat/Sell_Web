@@ -87,9 +87,19 @@ function updateNavbarAuth() {
         avatarEl.textContent = user.username.charAt(0).toUpperCase();
       }
     }
+
+    // ซ่อน "ร้านของฉัน" สำหรับ buyer
+    document.querySelectorAll('a[href="/seller.html"]').forEach(el => {
+      el.parentElement.style.display = user.role === 'seller' ? '' : 'none';
+    });
   } else {
     loginBtn.classList.remove('hidden');
     userMenu.classList.add('hidden');
+
+    // ซ่อน "ร้านของฉัน" เมื่อไม่ login
+    document.querySelectorAll('a[href="/seller.html"]').forEach(el => {
+      el.parentElement.style.display = 'none';
+    });
   }
 }
 
