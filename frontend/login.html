@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
   <!-- Google Identity Services (สำหรับ Google Sign-In) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
+
 <body>
 
   <div class="login-page">
@@ -50,74 +52,48 @@
           <button data-role="seller" onclick="setRole('seller')">🏪 ผู้ขาย</button>
         </div>
 
+        <div class="divider"><span>Google Account</span></div>
+
         <!-- Google Sign-In Button -->
         <div id="google-signin-btn" style="margin-bottom: 16px;"></div>
 
-        <!-- Manual Google Login button (fallback) -->
-        <button class="btn btn-google" id="google-login-fallback" onclick="manualGoogleLogin()">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-          Sign in with Google
-        </button>
 
-        <div class="divider"><span>หรือ</span></div>
-
-        <!-- Email/Password Form -->
-        <form id="login-form" onsubmit="handleEmailLogin(event)">
-          <div class="form-group">
-            <label for="email">อีเมล</label>
-            <input type="email" id="email" class="form-input" placeholder="name@example.com" required>
-          </div>
-          <div class="form-group">
-            <div class="form-link-row">
-              <label for="password">รหัสผ่าน</label>
-              <a href="#" class="form-link">ลืมรหัสผ่าน?</a>
-            </div>
-            <input type="password" id="password" class="form-input" placeholder="••••••••" required>
-          </div>
-          <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">เข้าสู่ระบบ</button>
-        </form>
-
-        <div class="login-footer">
-          ยังไม่มีบัญชี? <a href="/register.html">สมัครสมาชิก</a>
-        </div>
       </div>
-    </div>
 
-  </div>
+      <!-- Scripts -->
+      <script src="/js/api.js"></script>
+      <script src="/js/auth.js"></script>
+      <script>
+        // --- Role Toggle ---
+        let selectedRole = 'buyer';
 
-  <!-- Scripts -->
-  <script src="/js/api.js"></script>
-  <script src="/js/auth.js"></script>
-  <script>
-    // --- Role Toggle ---
-    let selectedRole = 'buyer';
+        function setRole(role) {
+          selectedRole = role;
+          document.querySelectorAll('#role-toggle button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.role === role);
+          });
+        }
 
-    function setRole(role) {
-      selectedRole = role;
-      document.querySelectorAll('#role-toggle button').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.role === role);
-      });
-    }
+        // --- Email Login (demo — backend ยังไม่ support email auth) ---
+        function handleEmailLogin(e) {
+          e.preventDefault();
+          showToast('กรุณาใช้ Google Sign-In เพื่อเข้าสู่ระบบ', 'error');
+        }
 
-    // --- Email Login (demo — backend ยังไม่ support email auth) ---
-    function handleEmailLogin(e) {
-      e.preventDefault();
-      showToast('กรุณาใช้ Google Sign-In เพื่อเข้าสู่ระบบ', 'error');
-    }
+        // --- Manual Google Login (fallback for when GSI lib doesn't load) ---
+        function manualGoogleLogin() {
+          showToast('กรุณาตั้งค่า Google Client ID ก่อน', 'error');
+        }
 
-    // --- Manual Google Login (fallback for when GSI lib doesn't load) ---
-    function manualGoogleLogin() {
-      showToast('กรุณาตั้งค่า Google Client ID ก่อน', 'error');
-    }
+        // --- Redirect if already logged in ---
+        if (UserStore.isLoggedIn()) {
+          window.location.href = '/';
+        }
 
-    // --- Redirect if already logged in ---
-    if (UserStore.isLoggedIn()) {
-      window.location.href = '/';
-    }
-
-    // --- Init Google Auth ---
-    window.addEventListener('load', initGoogleAuth);
-  </script>
+        // --- Init Google Auth ---
+        window.addEventListener('load', initGoogleAuth);
+      </script>
 
 </body>
+
 </html>
