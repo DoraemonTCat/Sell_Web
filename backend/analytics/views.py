@@ -90,3 +90,75 @@ class PotentialCustomersView(APIView):
 
         serializer = PotentialCustomerSerializer(unique_potential, many=True)
         return Response(serializer.data)
+
+
+class RecommendationView(APIView):
+    """
+    GET /api/analytics/recommendations/
+    แนะนำสินค้าด้วย AI (Cosine Similarity)
+    - ถ้า user login → collaborative filtering จาก behavior
+    - ถ้าไม่ login → สินค้ายอดนิยม / ล่าสุด
+    """
+    permission_classes = []  # Public — ไม่ต้อง login
+
+    def get(self, request):
+        from .recommendations import get_recommendations, get_popular_products
+        from products.serializers import ProductListSerializer
+
+        if request.user.is_authenticated:
+            products = get_recommendations(request.user.id, limit=8)
+        else:
+            products = get_popular_products(limit=8)
+
+        serializer = ProductListSerializer(products, many=True)
+        return Response(serializer.data)
+
+
+class SellerStatsView(APIView):
+    """
+    GET /api/analytics/seller-stats/
+    สถิติร้านค้าสำหรับ seller dashboard
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from products.models import Product
+        from orders.models import SaleOrder, OrderItem
+        from django.db.models import Sum, Count
+
+        seller = request.user
+
+        # จำนวนสินค้า
+        product_count = Product.objects.filter(seller=seller).count()
+
+        # จำนวน order ที่มีสินค้าของ seller
+        order_ids = OrderItem.objects.filter(
+            product__seller=seller
+        ).values_list('order_id', flat=True).distinct()
+
+        total_orders = len(set(order_ids))
+
+        # ยอดขายรวม (เฉพาะ order COMPLETED)
+        completed_revenue = OrderItem.objects.filter(
+            product__seller=seller,
+            order__status='COMPLETED'
+        ).aggregate(total=Sum('subtotal'))['total'] or 0
+
+        # จำนวน potential customers
+        seller_product_ids = Product.objects.filter(seller=seller).values_list('id', flat=True)
+        potential_count = UserBehavior.objects.filter(
+            product_id__in=seller_product_ids,
+            action='ADD_CART'
+        ).exclude(
+            user_id__in=UserBehavior.objects.filter(
+                product_id__in=seller_product_ids,
+                action='PURCHASE'
+            ).values_list('user_id', flat=True)
+        ).values('user_id').distinct().count()
+
+        return Response({
+            'product_count': product_count,
+            'total_orders': total_orders,
+            'completed_revenue': float(completed_revenue),
+            'potential_customers': potential_count,
+        })

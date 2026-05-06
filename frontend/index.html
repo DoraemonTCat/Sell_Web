@@ -100,6 +100,14 @@
 
       <!-- Pagination -->
       <div class="pagination" id="pagination"></div>
+
+      <!-- ========== AI Recommendations ========== -->
+      <div id="recommendations-section" style="margin-top:32px;">
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">🤖 สินค้าแนะนำสำหรับคุณ</h2>
+        <div class="product-list" id="recommendations-list" style="min-height:100px;">
+          <div class="skeleton" style="height:200px;"></div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -131,6 +139,37 @@
       const sidebar = document.getElementById('sidebar-filter');
       sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
     }
+
+    // AI Recommendations
+    async function loadRecommendations() {
+      const container = document.getElementById('recommendations-list');
+      try {
+        const data = await api.get('/analytics/recommendations/');
+        const products = Array.isArray(data) ? data : (data.results || []);
+
+        if (!products.length) {
+          document.getElementById('recommendations-section').style.display = 'none';
+          return;
+        }
+
+        container.innerHTML = products.map(p => `
+          <div class="product-card" onclick="viewProduct(${p.id})">
+            <img class="product-card-image" src="${p.image || '/img/placeholder.svg'}"
+                 alt="${escapeHtml(p.title)}" onerror="this.src='/img/placeholder.svg'">
+            <div class="product-card-body">
+              <div class="product-card-title">${escapeHtml(p.title)}</div>
+              <div class="product-card-price">฿${Number(p.unit_price).toLocaleString()}</div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        document.getElementById('recommendations-section').style.display = 'none';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(loadRecommendations, 500); // โหลดหลัง product list
+    });
   </script>
 
 </body>

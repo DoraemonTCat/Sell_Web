@@ -99,10 +99,31 @@
       <button class="btn btn-primary" onclick="showSection('add-product')" style="font-size:13px;">+ เพิ่มสินค้า</button>
     </div>
 
+    <!-- Stats Cards -->
+    <div id="stats-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;">
+      <div style="background:var(--color-bg-secondary);border-radius:8px;padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:700;color:var(--color-primary);" id="stat-products">-</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);">📦 สินค้า</div>
+      </div>
+      <div style="background:var(--color-bg-secondary);border-radius:8px;padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:700;color:var(--color-primary);" id="stat-orders">-</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);">📋 ออเดอร์</div>
+      </div>
+      <div style="background:var(--color-bg-secondary);border-radius:8px;padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:700;color:var(--color-success);" id="stat-revenue">-</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);">💰 ยอดขาย</div>
+      </div>
+      <div style="background:var(--color-bg-secondary);border-radius:8px;padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:700;color:#e65100;" id="stat-potential">-</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);">🎯 ลูกค้าที่สนใจ</div>
+      </div>
+    </div>
+
     <!-- Section Tabs -->
     <div class="tabs seller-tabs">
       <button class="tab active" data-section="my-products" onclick="showSection('my-products')">📦 สินค้าของฉัน</button>
       <button class="tab" data-section="seller-orders" onclick="showSection('seller-orders')">📋 ออเดอร์</button>
+      <button class="tab" data-section="analytics" onclick="showSection('analytics')">📊 วิเคราะห์</button>
       <button class="tab" data-section="add-product" onclick="showSection('add-product')">➕ เพิ่มสินค้า</button>
     </div>
 
@@ -122,6 +143,24 @@
           </thead>
           <tbody id="my-products-body">
             <tr><td colspan="5" style="text-align:center;padding:40px;">กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ===== Section: Analytics ===== -->
+      <div id="section-analytics" class="hidden">
+        <h2 style="margin-bottom:16px;">🎯 ลูกค้าที่สนใจ (Add to cart แต่ยังไม่ซื้อ)</h2>
+        <table class="product-table">
+          <thead>
+            <tr>
+              <th>ผู้ใช้</th>
+              <th>อีเมล</th>
+              <th>สินค้าที่สนใจ</th>
+              <th>วันที่</th>
+            </tr>
+          </thead>
+          <tbody id="potential-customers-body">
+            <tr><td colspan="4" style="text-align:center;padding:40px;">กำลังโหลด...</td></tr>
           </tbody>
         </table>
       </div>
@@ -226,14 +265,16 @@
 
     // ===== Section Navigation =====
     function showSection(section) {
-      ['my-products', 'seller-orders', 'add-product'].forEach(s => {
-        document.getElementById(`section-${s}`).classList.toggle('hidden', s !== section);
+      ['my-products', 'seller-orders', 'analytics', 'add-product'].forEach(s => {
+        const el = document.getElementById(`section-${s}`);
+        if (el) el.classList.toggle('hidden', s !== section);
       });
       document.querySelectorAll('.seller-tabs .tab').forEach(t => {
         t.classList.toggle('active', t.dataset.section === section);
       });
       if (section === 'my-products') loadMyProducts();
       if (section === 'seller-orders') loadSellerOrders();
+      if (section === 'analytics') loadPotentialCustomers();
       if (section === 'add-product' && !document.getElementById('edit-product-id').value) resetForm();
     }
 
@@ -499,8 +540,43 @@
 
     function escapeHtml(t) { const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
 
+    // ===== Seller Stats =====
+    async function loadStats() {
+      try {
+        const data = await api.get('/analytics/seller-stats/');
+        document.getElementById('stat-products').textContent = data.product_count || 0;
+        document.getElementById('stat-orders').textContent = data.total_orders || 0;
+        document.getElementById('stat-revenue').textContent = '฿' + Number(data.completed_revenue || 0).toLocaleString();
+        document.getElementById('stat-potential').textContent = data.potential_customers || 0;
+      } catch (err) { console.error('Stats error:', err); }
+    }
+
+    // ===== Potential Customers =====
+    async function loadPotentialCustomers() {
+      const tbody = document.getElementById('potential-customers-body');
+      try {
+        const data = await api.get('/analytics/potential-customers/');
+        const customers = Array.isArray(data) ? data : [];
+        if (!customers.length) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;">ยังไม่มีข้อมูล</td></tr>';
+          return;
+        }
+        tbody.innerHTML = customers.map(c => `
+          <tr>
+            <td>${escapeHtml(c.username)}</td>
+            <td>${escapeHtml(c.email)}</td>
+            <td>${escapeHtml(c.product_title)}</td>
+            <td>${new Date(c.added_at).toLocaleDateString('th-TH')}</td>
+          </tr>
+        `).join('');
+      } catch { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">โหลดไม่สำเร็จ</td></tr>'; }
+    }
+
     // ===== Init =====
-    document.addEventListener('DOMContentLoaded', () => loadMyProducts());
+    document.addEventListener('DOMContentLoaded', () => {
+      loadMyProducts();
+      loadStats();
+    });
   </script>
 
 </body>
