@@ -1,0 +1,128 @@
+/* ===========================================
+   Product Detail Page — รายละเอียดสินค้า
+   Desktop: รูปซ้าย + ข้อมูลขวา
+   Mobile: stack แนวตั้ง
+   =========================================== */
+
+.product-detail {
+  max-width: 900px;
+  margin: 32px auto;
+  padding: 0 16px;
+  display: flex;
+  gap: 32px;
+}
+
+.product-detail-image {
+  flex: 1;
+  max-width: 400px;
+}
+.product-detail-image img {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-secondary);
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.product-detail-info {
+  flex: 1;
+}
+.product-detail-info h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.product-detail-seller {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 16px;
+}
+.product-detail-price {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 16px;
+}
+.product-detail-desc {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin-bottom: 24px;
+  white-space: pre-wrap;
+}
+
+.product-detail-stock {
+  font-size: 14px;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+}
+.product-detail-stock.in-stock { border-left: 3px solid var(--color-success); }
+.product-detail-stock.out-of-stock { border-left: 3px solid var(--color-error); }
+
+/* --- Quantity Selector --- */
+.qty-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.qty-selector label {
+  font-size: 14px;
+  font-weight: 500;
+}
+.qty-selector input {
+  width: 70px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  text-align: center;
+  font-family: var(--font-family);
+}
+
+.product-detail-actions {
+  display: flex;
+  gap: 12px;
+}
+.product-detail-actions .btn {
+  flex: 1;
+  padding: 14px;
+  font-size: 15px;
+}
+
+/* --- Back Link --- */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 16px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+.back-link:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+/* --- Mobile --- */
+@media (max-width: 568px) {
+  .product-detail {
+    flex-direction: column;
+    margin: 16px auto;
+    gap: 16px;
+  }
+  .product-detail-image {
+    max-width: 100%;
+  }
+  .product-detail-info h1 {
+    font-size: 20px;
+  }
+  .product-detail-price {
+    font-size: 22px;
+  }
+  .product-detail-actions {
+    flex-direction: column;
+  }
+}

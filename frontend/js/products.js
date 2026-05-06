@@ -113,15 +113,18 @@ function viewProduct(id) {
   window.location.href = `/product.html?id=${id}`;
 }
 
-// --- Add to cart (placeholder) ---
-function addToCart(productId) {
+// --- Add to cart ---
+async function addToCart(productId) {
   if (!UserStore.isLoggedIn()) {
     window.location.href = '/login.html';
     return;
   }
-  showToast('เพิ่มลงตะกร้าแล้ว!');
-  // Track behavior
-  api.post('/analytics/track/', { product: productId, action: 'ADD_CART' });
+  try {
+    const product = await api.get(`/products/${productId}/`);
+    Cart.add(product, 1);
+  } catch {
+    showToast('ไม่สามารถเพิ่มสินค้าได้', 'error');
+  }
 }
 
 // --- Escape HTML ---
