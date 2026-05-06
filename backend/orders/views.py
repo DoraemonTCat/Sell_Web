@@ -137,10 +137,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = PaymentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        Payment.objects.create(
+        # สร้าง Payment พร้อมไฟล์สลิป
+        payment = Payment.objects.create(
             order=order,
             paid_at=timezone.now(),
-            **serializer.validated_data
+            amount_received=serializer.validated_data.get('amount_received', 0),
+            payment_method=serializer.validated_data.get('payment_method', 'bank_transfer'),
+            payment_slip=request.FILES.get('payment_slip'),
         )
 
         # เปลี่ยนสถานะ order → PAID
@@ -158,7 +161,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         orders = SaleOrder.objects.filter(
             items__product__seller=request.user
         ).distinct().order_by('-created_at')
-        return Response(OrderListSerializer(orders, many=True).data)
+        return Response(OrderListSerializer(orders, many=True, context={'request': request}).data)
 
     @action(detail=True, methods=['post'])
     def verify_payment(self, request, pk=None):

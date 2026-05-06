@@ -581,8 +581,8 @@
           <div class="order-card-footer">
             <div class="order-total">฿${Number(o.total_amount).toLocaleString()}</div>
             <div class="order-actions">
-              ${o.payment_slip_url ? `
-                <button class="btn btn-outline" style="font-size:13px;padding:8px 14px;" onclick="viewSlip('${o.payment_slip_url}')">🧾 ดูสลิป</button>
+              ${o.status === 'PAID' ? `
+                <button class="btn btn-success" style="font-size:13px;padding:8px 14px;" onclick="viewSlip('${o.payment_slip_url}')">🧾 ดูสลิป</button>
               ` : ''}
               ${o.status === 'PAID' ? `
                 <button class="btn btn-primary" style="font-size:13px;padding:8px 14px;" onclick="openDeliveryModal(${o.id})">🚚 สร้างใบส่งของ</button>
