@@ -1,17 +1,113 @@
 <!DOCTYPE html>
 <html lang="th">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Storemesh — แพลตฟอร์มเชื่อมโยงผู้ซื้อและผู้ขาย ด้วยมันวังทรงพลังและมีประสิทธิภาพ" />
-    <title>Storemesh — Connecting Business</title>
-    <!-- Google Fonts: Inter for modern typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sell Web — ร้านค้าออนไลน์</title>
+  <meta name="description" content="ระบบซื้อ-ขายสินค้าออนไลน์ พร้อมระบบชำระเงิน ใบส่งของ และ AI แนะนำสินค้า">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/products.css">
+</head>
+<body>
+
+  <!-- ========== Navbar ========== -->
+  <nav class="navbar" id="main-navbar">
+    <!-- Logo -->
+    <a href="/" class="navbar-logo">
+      <div class="navbar-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>
+      </div>
+      <div>
+        <div class="navbar-logo-text">SellWeb</div>
+        <div class="navbar-logo-sub">MARKETPLACE</div>
+      </div>
+    </a>
+
+    <!-- Menu Links (web only) -->
+    <ul class="navbar-menu">
+      <li><a href="/" class="active">สินค้า</a></li>
+      <li><a href="/buyer.html">คำสั่งซื้อ</a></li>
+      <li><a href="/seller.html">ร้านของฉัน</a></li>
+    </ul>
+
+    <div class="navbar-spacer"></div>
+
+    <!-- Search Bar (web only) -->
+    <div class="navbar-search">
+      <span class="navbar-search-icon">🔍</span>
+      <input type="text" id="nav-search-input" placeholder="ค้นหาสินค้า...">
+    </div>
+
+    <!-- Hamburger (mobile only) -->
+    <button class="navbar-hamburger" id="hamburger-btn" onclick="toggleMobileMenu()">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+    </button>
+
+    <!-- User Section -->
+    <div class="navbar-user">
+      <a href="/login.html" class="btn btn-primary" id="nav-login-btn" style="padding:8px 20px;font-size:13px;">เข้าสู่ระบบ</a>
+      <div id="nav-user-menu" class="hidden" style="display:flex;align-items:center;gap:8px;">
+        <div class="navbar-avatar" id="nav-avatar">U</div>
+        <button class="btn btn-outline" onclick="logout()" style="padding:6px 14px;font-size:12px;">ออก</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== Page Layout: Sidebar + Main ========== -->
+  <div class="page-layout">
+
+    <!-- Sidebar Filter (web only) -->
+    <aside class="sidebar" id="sidebar-filter">
+      <div class="sidebar-title">ตัวกรอง</div>
+
+      <label for="filter-min-price">ราคาขั้นต่ำ</label>
+      <input type="number" id="filter-min-price" placeholder="฿ ต่ำสุด" min="0" onchange="applyFilters()">
+
+      <label for="filter-max-price">ราคาสูงสุด</label>
+      <input type="number" id="filter-max-price" placeholder="฿ สูงสุด" min="0" onchange="applyFilters()">
+
+      <label for="search-input">ค้นหา</label>
+      <input type="text" id="search-input" placeholder="ชื่อสินค้า..." onkeypress="if(event.key==='Enter')applyFilters()">
+
+      <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="applyFilters()">กรอง</button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-header">
+        <h1>สินค้าทั้งหมด</h1>
+        <select class="sort-select" id="sort-select" onchange="applyFilters()">
+          <option value="-created_at">ใหม่ล่าสุด</option>
+          <option value="unit_price">ราคา: ต่ำ → สูง</option>
+          <option value="-unit_price">ราคา: สูง → ต่ำ</option>
+          <option value="title">ชื่อ: ก → ฮ</option>
+        </select>
+      </div>
+
+      <!-- Product List -->
+      <div class="product-list" id="product-list">
+        <!-- Rendered by products.js -->
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination"></div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/products.js"></script>
+  <script>
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+      const sidebar = document.getElementById('sidebar-filter');
+      sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+    }
+  </script>
+
+</body>
 </html>

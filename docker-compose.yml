@@ -1,6 +1,7 @@
 # ===========================================
 # Docker Compose — Sell_Web E-Commerce Platform
-# Services: PostgreSQL, Redis, Django, Celery, React, Nginx
+# Services: PostgreSQL, Redis, Django, Celery, Nginx
+# Frontend: Vanilla HTML/CSS/JS served by Nginx (ไม่ต้อง Node.js)
 # Usage: docker compose up --build
 # ===========================================
 
@@ -72,35 +73,21 @@ services:
     depends_on:
       - backend
 
-  # --- Frontend: React + Vite ---
-  # SPA with Google OAuth, product listing, buyer/seller dashboards
-  frontend:
-    build: ./frontend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    env_file:
-      - .env
-    ports:
-      - "5173:5173"
-
-  # --- Reverse Proxy: Nginx ---
-  # Routes: /api/ → Django, / → React, /media/ → uploads
+  # --- Reverse Proxy + Frontend: Nginx ---
+  # Serves HTML/CSS/JS directly (no Node.js needed)
+  # Routes: /api/ → Django, /media/ → uploads, / → static frontend
   nginx:
     build: ./nginx
     ports:
       - "3000:80"
     volumes:
+      - ./frontend:/usr/share/nginx/html   # Vanilla HTML/CSS/JS
       - media_data:/usr/share/nginx/media
       - static_data:/usr/share/nginx/static
     depends_on:
       - backend
-      - frontend
 
 # --- Persistent Volumes ---
-# postgres_data: Database files
-# media_data: Product images, payment slips
-# static_data: Django admin + DRF static files
 volumes:
   postgres_data:
   media_data:

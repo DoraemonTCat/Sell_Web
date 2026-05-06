@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ — Sell Web</title>
+  <meta name="description" content="เข้าสู่ระบบ Sell Web ด้วย Google Account หรือ Email">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/login.css">
+  <!-- Google Identity Services (สำหรับ Google Sign-In) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <div class="login-page">
+
+    <!-- ========== Left: Branding + Phone Mockup ========== -->
+    <div class="login-branding">
+      <div class="login-branding-content">
+        <!-- Phone Mockup (ตามภาพ reference) -->
+        <div class="phone-mockup">
+          <div class="phone-mockup-header">
+            <span>☰ SellWeb</span>
+            <span>🔍</span>
+          </div>
+          <div class="phone-mockup-body">
+            <div class="phone-mockup-title">สินค้าทั้งหมด</div>
+            <div class="phone-mockup-item"></div>
+            <div class="phone-mockup-item"></div>
+            <div class="phone-mockup-item"></div>
+            <div class="phone-mockup-item"></div>
+          </div>
+        </div>
+        <div class="branding-title">SellWeb</div>
+        <div class="branding-subtitle">ระบบซื้อ-ขายสินค้าออนไลน์<br>จัดการง่าย ครบจบในที่เดียว</div>
+      </div>
+    </div>
+
+    <!-- ========== Right: Login Form ========== -->
+    <div class="login-form-container">
+      <div class="login-form-box">
+        <h1 class="login-form-title">เข้าสู่ระบบ</h1>
+        <p class="login-form-subtitle">เลือกบทบาทและเข้าสู่ระบบเพื่อเริ่มต้น</p>
+
+        <!-- Role Toggle: ผู้ซื้อ / ผู้ขาย -->
+        <div class="role-toggle" id="role-toggle">
+          <button class="active" data-role="buyer" onclick="setRole('buyer')">🛒 ผู้ซื้อ</button>
+          <button data-role="seller" onclick="setRole('seller')">🏪 ผู้ขาย</button>
+        </div>
+
+        <!-- Google Sign-In Button -->
+        <div id="google-signin-btn" style="margin-bottom: 16px;"></div>
+
+        <!-- Manual Google Login button (fallback) -->
+        <button class="btn btn-google" id="google-login-fallback" onclick="manualGoogleLogin()">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+          Sign in with Google
+        </button>
+
+        <div class="divider"><span>หรือ</span></div>
+
+        <!-- Email/Password Form -->
+        <form id="login-form" onsubmit="handleEmailLogin(event)">
+          <div class="form-group">
+            <label for="email">อีเมล</label>
+            <input type="email" id="email" class="form-input" placeholder="name@example.com" required>
+          </div>
+          <div class="form-group">
+            <div class="form-link-row">
+              <label for="password">รหัสผ่าน</label>
+              <a href="#" class="form-link">ลืมรหัสผ่าน?</a>
+            </div>
+            <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">เข้าสู่ระบบ</button>
+        </form>
+
+        <div class="login-footer">
+          ยังไม่มีบัญชี? <a href="/register.html">สมัครสมาชิก</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    // --- Role Toggle ---
+    let selectedRole = 'buyer';
+
+    function setRole(role) {
+      selectedRole = role;
+      document.querySelectorAll('#role-toggle button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.role === role);
+      });
+    }
+
+    // --- Email Login (demo — backend ยังไม่ support email auth) ---
+    function handleEmailLogin(e) {
+      e.preventDefault();
+      showToast('กรุณาใช้ Google Sign-In เพื่อเข้าสู่ระบบ', 'error');
+    }
+
+    // --- Manual Google Login (fallback for when GSI lib doesn't load) ---
+    function manualGoogleLogin() {
+      showToast('กรุณาตั้งค่า Google Client ID ก่อน', 'error');
+    }
+
+    // --- Redirect if already logged in ---
+    if (UserStore.isLoggedIn()) {
+      window.location.href = '/';
+    }
+
+    // --- Init Google Auth ---
+    window.addEventListener('load', initGoogleAuth);
+  </script>
+
+</body>
+</html>
