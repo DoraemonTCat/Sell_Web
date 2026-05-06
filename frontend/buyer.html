@@ -232,7 +232,7 @@
       }
 
       try {
-        const res = await apiFetch(`/api/orders/${selectedOrderId}/upload_slip/`, {
+        const res = await apiFetch(`/orders/${selectedOrderId}/upload_slip/`, {
           method: 'POST',
           body: formData,
           headers: { 'Authorization': `Bearer ${TokenStore.getAccess()}` }

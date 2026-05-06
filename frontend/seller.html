@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ร้านของฉัน — Sell Web</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <style>
+    /* --- Seller-specific styles --- */
+    .seller-tabs { margin-bottom: 0; }
+    .seller-content { padding-top: 24px; }
+
+    /* Product Form */
+    .product-form { max-width: 600px; }
+    .product-form .form-group { margin-bottom: 20px; }
+    .product-form textarea { min-height: 100px; resize: vertical; }
+
+    /* Product Table */
+    .product-table { width: 100%; border-collapse: collapse; }
+    .product-table th {
+      text-align: left; padding: 10px 12px; font-size: 13px;
+      color: var(--color-text-secondary); border-bottom: 2px solid var(--color-border);
+    }
+    .product-table td {
+      padding: 12px; border-bottom: 1px solid var(--color-border-light);
+      font-size: 14px; vertical-align: middle;
+    }
+    .product-table tr:hover { background: var(--color-bg-secondary); }
+    .product-table img {
+      width: 44px; height: 44px; border-radius: 4px; object-fit: cover;
+    }
+    .product-table .actions { display: flex; gap: 6px; }
+    .product-table .actions button { padding: 6px 10px; font-size: 12px; }
+
+    /* Stock Modal */
+    .stock-modal-info { margin-bottom: 16px; padding: 12px;
+      background: var(--color-bg-secondary); border-radius: 8px; }
+    .stock-modal-info strong { display: block; font-size: 15px; }
+    .stock-modal-info span { font-size: 13px; color: var(--color-text-secondary); }
+
+    /* Delivery Slip Print */
+    .delivery-slip-preview {
+      border: 1px solid var(--color-border); border-radius: 8px;
+      padding: 24px; max-width: 500px; margin: 0 auto;
+    }
+    .delivery-slip-preview h3 { text-align: center; margin-bottom: 16px; }
+    .slip-row { display: flex; justify-content: space-between; padding: 4px 0;
+      font-size: 14px; border-bottom: 1px dotted var(--color-border-light); }
+    .slip-row:last-child { border-bottom: none; font-weight: 600; }
+
+    @media print {
+      .navbar, .tabs, .dashboard-header, .no-print { display: none !important; }
+      .delivery-slip-preview { border: none; }
+    }
+
+    @media (max-width: 568px) {
+      .product-table { font-size: 12px; }
+      .product-table th:nth-child(3), .product-table td:nth-child(3),
+      .product-table th:nth-child(4), .product-table td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== Navbar ========== -->
+  <nav class="navbar">
+    <a href="/" class="navbar-logo">
+      <div class="navbar-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>
+      </div>
+      <div>
+        <div class="navbar-logo-text">SellWeb</div>
+        <div class="navbar-logo-sub">MARKETPLACE</div>
+      </div>
+    </a>
+    <ul class="navbar-menu">
+      <li><a href="/">สินค้า</a></li>
+      <li><a href="/buyer.html">คำสั่งซื้อ</a></li>
+      <li><a href="/seller.html" class="active">ร้านของฉัน</a></li>
+    </ul>
+    <div class="navbar-spacer"></div>
+    <div class="navbar-user">
+      <a href="/login.html" class="btn btn-primary" id="nav-login-btn" style="padding:8px 20px;font-size:13px;">เข้าสู่ระบบ</a>
+      <div id="nav-user-menu" class="hidden" style="display:flex;align-items:center;gap:8px;">
+        <div class="navbar-avatar" id="nav-avatar">U</div>
+        <button class="btn btn-outline" onclick="logout()" style="padding:6px 14px;font-size:12px;">ออก</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== Dashboard ========== -->
+  <div class="dashboard">
+    <div class="dashboard-header">
+      <h1>🏪 ร้านของฉัน</h1>
+      <button class="btn btn-primary" onclick="showSection('add-product')" style="font-size:13px;">+ เพิ่มสินค้า</button>
+    </div>
+
+    <!-- Section Tabs -->
+    <div class="tabs seller-tabs">
+      <button class="tab active" data-section="my-products" onclick="showSection('my-products')">📦 สินค้าของฉัน</button>
+      <button class="tab" data-section="seller-orders" onclick="showSection('seller-orders')">📋 ออเดอร์</button>
+      <button class="tab" data-section="add-product" onclick="showSection('add-product')">➕ เพิ่มสินค้า</button>
+    </div>
+
+    <div class="seller-content">
+
+      <!-- ===== Section: My Products ===== -->
+      <div id="section-my-products">
+        <table class="product-table">
+          <thead>
+            <tr>
+              <th>รูป</th>
+              <th>ชื่อสินค้า</th>
+              <th>ราคา</th>
+              <th>Stock</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="my-products-body">
+            <tr><td colspan="5" style="text-align:center;padding:40px;">กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ===== Section: Seller Orders ===== -->
+      <div id="section-seller-orders" class="hidden">
+        <div class="tabs" id="seller-order-tabs" style="margin-bottom:16px;">
+          <button class="tab active" data-status="all" onclick="filterSellerOrders('all')">ทั้งหมด</button>
+          <button class="tab" data-status="PENDING" onclick="filterSellerOrders('PENDING')">รอชำระ</button>
+          <button class="tab" data-status="PAID" onclick="filterSellerOrders('PAID')">รอตรวจสลิป</button>
+          <button class="tab" data-status="SHIPPED" onclick="filterSellerOrders('SHIPPED')">จัดส่งแล้ว</button>
+        </div>
+        <div id="seller-orders-container"></div>
+      </div>
+
+      <!-- ===== Section: Add/Edit Product ===== -->
+      <div id="section-add-product" class="hidden">
+        <h2 id="form-title" style="margin-bottom:20px;">เพิ่มสินค้าใหม่</h2>
+        <form class="product-form" id="product-form" onsubmit="saveProduct(event)">
+          <input type="hidden" id="edit-product-id" value="">
+          <div class="form-group">
+            <label for="p-title">ชื่อสินค้า</label>
+            <input type="text" id="p-title" class="form-input" placeholder="เช่น เสื้อยืดลาย cat" required>
+          </div>
+          <div class="form-group">
+            <label for="p-description">รายละเอียดสินค้า</label>
+            <textarea id="p-description" class="form-input" placeholder="อธิบายสินค้า..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="p-price">ราคาต่อชิ้น (บาท)</label>
+            <input type="number" id="p-price" class="form-input" placeholder="฿" min="1" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="p-quantity">จำนวนในคลัง</label>
+            <input type="number" id="p-quantity" class="form-input" placeholder="จำนวน" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>ภาพสินค้า</label>
+            <div class="file-upload" onclick="document.getElementById('p-image').click()">
+              <div style="font-size:32px;" id="image-preview-icon">🖼️</div>
+              <p id="image-preview-text">คลิกเพื่ออัปโหลดภาพสินค้า</p>
+              <input type="file" id="p-image" accept="image/*" onchange="previewProductImage(this)">
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <button type="submit" class="btn btn-primary" id="save-product-btn">บันทึกสินค้า</button>
+            <button type="button" class="btn btn-outline" onclick="resetForm(); showSection('my-products')">ยกเลิก</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== Stock Modal ========== -->
+  <div class="modal-overlay hidden" id="stock-modal">
+    <div class="modal">
+      <h2>📦 เพิ่ม Stock</h2>
+      <div class="stock-modal-info" id="stock-product-info"></div>
+      <div class="form-group">
+        <label>จำนวนที่เพิ่ม</label>
+        <input type="number" id="stock-qty" class="form-input" placeholder="จำนวน" min="1" value="1">
+      </div>
+      <div class="form-group">
+        <label>หมายเหตุ</label>
+        <input type="text" id="stock-note" class="form-input" placeholder="เช่น เติม stock รอบ 2">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeStockModal()">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="submitStock()">เพิ่ม Stock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== Delivery Slip Modal ========== -->
+  <div class="modal-overlay hidden" id="delivery-modal">
+    <div class="modal" style="max-width:550px;">
+      <h2>🚚 ใบส่งของ</h2>
+      <div class="form-group no-print">
+        <label>เลข Tracking (optional)</label>
+        <input type="text" id="tracking-number" class="form-input" placeholder="เช่น TH12345678">
+      </div>
+      <div id="delivery-slip-content"></div>
+      <div class="modal-actions no-print">
+        <button class="btn btn-outline" onclick="closeDeliveryModal()">ปิด</button>
+        <button class="btn btn-primary" id="create-slip-btn" onclick="createDeliverySlip()">สร้างใบส่งของ</button>
+        <button class="btn btn-outline hidden" id="print-slip-btn" onclick="window.print()">🖨️ พิมพ์</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    if (!UserStore.isLoggedIn()) window.location.href = '/login.html';
+
+    let sellerOrders = [];
+    let sellerOrderFilter = 'all';
+    let stockProductId = null;
+    let deliveryOrderId = null;
+
+    // ===== Section Navigation =====
+    function showSection(section) {
+      ['my-products', 'seller-orders', 'add-product'].forEach(s => {
+        document.getElementById(`section-${s}`).classList.toggle('hidden', s !== section);
+      });
+      document.querySelectorAll('.seller-tabs .tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.section === section);
+      });
+      if (section === 'my-products') loadMyProducts();
+      if (section === 'seller-orders') loadSellerOrders();
+      if (section === 'add-product' && !document.getElementById('edit-product-id').value) resetForm();
+    }
+
+    // ===== My Products =====
+    async function loadMyProducts() {
+      const tbody = document.getElementById('my-products-body');
+      try {
+        const data = await api.get('/products/my_products/');
+        const products = Array.isArray(data) ? data : (data.results || []);
+
+        if (!products.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h2>ยังไม่มีสินค้า</h2><p>กด "เพิ่มสินค้า" เพื่อเริ่มขาย</p></td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = products.map(p => `
+          <tr>
+            <td><img src="${p.image || '/img/placeholder.svg'}" alt="${escapeHtml(p.title)}" onerror="this.src='/img/placeholder.svg'"></td>
+            <td><strong>${escapeHtml(p.title)}</strong></td>
+            <td>฿${Number(p.unit_price).toLocaleString()}</td>
+            <td>${p.quantity !== undefined ? p.quantity : '-'}</td>
+            <td class="actions">
+              <button class="btn btn-outline" onclick="editProduct(${p.id})">✏️</button>
+              <button class="btn btn-outline" onclick="openStockModal(${p.id}, '${escapeHtml(p.title)}')">📦</button>
+              <button class="btn btn-outline" style="color:var(--color-error)" onclick="deleteProduct(${p.id})">🗑️</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--color-error);">โหลดไม่สำเร็จ</td></tr>';
+      }
+    }
+
+    // ===== Add/Edit Product =====
+    function previewProductImage(input) {
+      const file = input.files[0];
+      if (!file) return;
+      document.getElementById('image-preview-icon').textContent = '✅';
+      document.getElementById('image-preview-text').textContent = file.name;
+    }
+
+    async function saveProduct(e) {
+      e.preventDefault();
+      const btn = document.getElementById('save-product-btn');
+      btn.disabled = true;
+      btn.textContent = 'กำลังบันทึก...';
+
+      const formData = new FormData();
+      formData.append('title', document.getElementById('p-title').value);
+      formData.append('description', document.getElementById('p-description').value);
+      formData.append('unit_price', document.getElementById('p-price').value);
+      formData.append('quantity', document.getElementById('p-quantity').value);
+      const imageFile = document.getElementById('p-image').files[0];
+      if (imageFile) formData.append('image', imageFile);
+
+      const editId = document.getElementById('edit-product-id').value;
+
+      try {
+        const url = editId ? `/products/${editId}/` : '/products/';
+        const method = editId ? 'PATCH' : 'POST';
+        const res = await apiFetch(url, {
+          method, body: formData,
+          headers: { 'Authorization': `Bearer ${TokenStore.getAccess()}` }
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast(editId ? 'แก้ไขสินค้าสำเร็จ!' : 'เพิ่มสินค้าสำเร็จ!');
+          resetForm();
+          showSection('my-products');
+        } else {
+          const errMsg = Object.values(data).flat().join(', ');
+          showToast(errMsg || 'เกิดข้อผิดพลาด', 'error');
+        }
+      } catch (err) {
+        showToast('เกิดข้อผิดพลาด', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'บันทึกสินค้า';
+      }
+    }
+
+    async function editProduct(id) {
+      try {
+        const p = await api.get(`/products/${id}/`);
+        document.getElementById('edit-product-id').value = p.id;
+        document.getElementById('p-title').value = p.title;
+        document.getElementById('p-description').value = p.description || '';
+        document.getElementById('p-price').value = p.unit_price;
+        document.getElementById('p-quantity').value = p.quantity;
+        document.getElementById('form-title').textContent = '✏️ แก้ไขสินค้า';
+        showSection('add-product');
+      } catch { showToast('โหลดสินค้าไม่สำเร็จ', 'error'); }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('ต้องการลบสินค้านี้?')) return;
+      try {
+        await api.delete(`/products/${id}/`);
+        showToast('ลบสินค้าสำเร็จ');
+        loadMyProducts();
+      } catch { showToast('ลบไม่สำเร็จ', 'error'); }
+    }
+
+    function resetForm() {
+      document.getElementById('product-form').reset();
+      document.getElementById('edit-product-id').value = '';
+      document.getElementById('form-title').textContent = 'เพิ่มสินค้าใหม่';
+      document.getElementById('image-preview-icon').textContent = '🖼️';
+      document.getElementById('image-preview-text').textContent = 'คลิกเพื่ออัปโหลดภาพสินค้า';
+    }
+
+    // ===== Stock Management =====
+    function openStockModal(productId, title) {
+      stockProductId = productId;
+      document.getElementById('stock-product-info').innerHTML = `<strong>${title}</strong><span>Product ID: ${productId}</span>`;
+      document.getElementById('stock-modal').classList.remove('hidden');
+    }
+    function closeStockModal() {
+      document.getElementById('stock-modal').classList.add('hidden');
+      stockProductId = null;
+    }
+    async function submitStock() {
+      if (!stockProductId) return;
+      const qty = parseInt(document.getElementById('stock-qty').value);
+      const note = document.getElementById('stock-note').value;
+      try {
+        const data = await api.post(`/products/${stockProductId}/stock/`, {
+          quantity_change: qty, reason: 'RESTOCK', note
+        });
+        if (data.new_quantity !== undefined) {
+          showToast(`เพิ่ม stock สำเร็จ! (${data.new_quantity} ชิ้น)`);
+          closeStockModal();
+          loadMyProducts();
+        } else {
+          showToast(data.error || 'เกิดข้อผิดพลาด', 'error');
+        }
+      } catch { showToast('เกิดข้อผิดพลาด', 'error'); }
+    }
+
+    // ===== Seller Orders =====
+    async function loadSellerOrders() {
+      const container = document.getElementById('seller-orders-container');
+      try {
+        const data = await api.get('/orders/seller_orders/');
+        sellerOrders = Array.isArray(data) ? data : (data.results || []);
+        renderSellerOrders();
+      } catch {
+        container.innerHTML = '<div class="empty-state"><h2>โหลดไม่สำเร็จ</h2></div>';
+      }
+    }
+
+    function filterSellerOrders(status) {
+      sellerOrderFilter = status;
+      document.querySelectorAll('#seller-order-tabs .tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.status === status);
+      });
+      renderSellerOrders();
+    }
+
+    function renderSellerOrders() {
+      const container = document.getElementById('seller-orders-container');
+      let orders = sellerOrders;
+      if (sellerOrderFilter !== 'all') orders = orders.filter(o => o.status === sellerOrderFilter);
+
+      if (!orders.length) {
+        container.innerHTML = '<div class="empty-state"><div style="font-size:48px;">📋</div><h2>ยังไม่มีออเดอร์</h2></div>';
+        return;
+      }
+
+      const statusLabels = { PENDING:'รอชำระเงิน', PAID:'รอตรวจสลิป', SHIPPED:'จัดส่งแล้ว', COMPLETED:'สำเร็จ' };
+
+      container.innerHTML = orders.map(o => `
+        <div class="order-card">
+          <div class="order-card-header">
+            <div>
+              <span class="order-number">${o.order_number}</span>
+              <span class="order-date">${new Date(o.created_at).toLocaleDateString('th-TH')}</span>
+            </div>
+            <span class="status-badge status-${o.status}">${statusLabels[o.status] || o.status}</span>
+          </div>
+          <div class="order-card-body">
+            <div style="font-size:13px;color:var(--color-text-secondary);">
+              ผู้ซื้อ: ${o.buyer_name || '-'} · ${o.item_count} รายการ
+            </div>
+          </div>
+          <div class="order-card-footer">
+            <div class="order-total">฿${Number(o.total_amount).toLocaleString()}</div>
+            <div class="order-actions">
+              ${o.status === 'PAID' ? `
+                <button class="btn btn-primary" style="font-size:13px;padding:8px 14px;" onclick="verifyPayment(${o.id}, 'VERIFIED')">✅ Verify</button>
+                <button class="btn btn-outline" style="font-size:13px;padding:8px 14px;color:var(--color-error);" onclick="verifyPayment(${o.id}, 'REJECTED')">❌ Reject</button>
+              ` : ''}
+              ${o.status === 'PAID' ? `
+                <button class="btn btn-outline" style="font-size:13px;padding:8px 14px;" onclick="openDeliveryModal(${o.id})">🚚 ใบส่งของ</button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ===== Verify Payment =====
+    async function verifyPayment(orderId, action) {
+      const label = action === 'VERIFIED' ? 'ยืนยัน' : 'ปฏิเสธ';
+      if (!confirm(`${label}สลิปชำระเงินนี้?`)) return;
+      try {
+        const data = await api.post(`/orders/${orderId}/verify_payment/`, { action, note: '' });
+        showToast(data.message || `${label}สำเร็จ`);
+        loadSellerOrders();
+      } catch { showToast('เกิดข้อผิดพลาด', 'error'); }
+    }
+
+    // ===== Delivery Slip =====
+    function openDeliveryModal(orderId) {
+      deliveryOrderId = orderId;
+      document.getElementById('delivery-slip-content').innerHTML = '';
+      document.getElementById('create-slip-btn').classList.remove('hidden');
+      document.getElementById('print-slip-btn').classList.add('hidden');
+      document.getElementById('delivery-modal').classList.remove('hidden');
+    }
+    function closeDeliveryModal() {
+      document.getElementById('delivery-modal').classList.add('hidden');
+      deliveryOrderId = null;
+    }
+
+    async function createDeliverySlip() {
+      if (!deliveryOrderId) return;
+      const btn = document.getElementById('create-slip-btn');
+      btn.disabled = true; btn.textContent = 'กำลังสร้าง...';
+
+      const tracking = document.getElementById('tracking-number').value;
+      try {
+        const data = await api.post(`/orders/${deliveryOrderId}/delivery_slip/`, { tracking_number: tracking });
+
+        if (data.slip_number) {
+          document.getElementById('delivery-slip-content').innerHTML = `
+            <div class="delivery-slip-preview">
+              <h3>📄 ใบส่งของ</h3>
+              <div class="slip-row"><span>เลขใบส่งของ:</span><span>${data.slip_number}</span></div>
+              <div class="slip-row"><span>เลข Order:</span><span>${data.order_number || '-'}</span></div>
+              <div class="slip-row"><span>ผู้รับ:</span><span>${data.buyer_name || '-'}</span></div>
+              <div class="slip-row"><span>ที่อยู่:</span><span>${data.buyer_address || '-'}</span></div>
+              <div class="slip-row"><span>Tracking:</span><span>${data.tracking_number || '-'}</span></div>
+              <hr style="margin:12px 0;">
+              ${(data.items || []).map(item => `
+                <div class="slip-row">
+                  <span>${item.product_title} × ${item.quantity}</span>
+                  <span>฿${Number(item.subtotal).toLocaleString()}</span>
+                </div>
+              `).join('')}
+            </div>`;
+          btn.classList.add('hidden');
+          document.getElementById('print-slip-btn').classList.remove('hidden');
+          showToast('สร้างใบส่งของสำเร็จ!');
+          loadSellerOrders();
+        } else {
+          showToast(data.error || 'เกิดข้อผิดพลาด', 'error');
+        }
+      } catch { showToast('เกิดข้อผิดพลาด', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'สร้างใบส่งของ'; }
+    }
+
+    function escapeHtml(t) { const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
+
+    // ===== Init =====
+    document.addEventListener('DOMContentLoaded', () => loadMyProducts());
+  </script>
+
+</body>
+</html>
