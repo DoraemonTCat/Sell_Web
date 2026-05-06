@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คำสั่งซื้อของฉัน — Sell Web</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+
+  <!-- ========== Navbar ========== -->
+  <nav class="navbar">
+    <a href="/" class="navbar-logo">
+      <div class="navbar-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>
+      </div>
+      <div>
+        <div class="navbar-logo-text">SellWeb</div>
+        <div class="navbar-logo-sub">MARKETPLACE</div>
+      </div>
+    </a>
+    <ul class="navbar-menu">
+      <li><a href="/">สินค้า</a></li>
+      <li><a href="/buyer.html" class="active">คำสั่งซื้อ</a></li>
+      <li><a href="/seller.html">ร้านของฉัน</a></li>
+    </ul>
+    <div class="navbar-spacer"></div>
+    <div class="navbar-user">
+      <a href="/login.html" class="btn btn-primary" id="nav-login-btn" style="padding:8px 20px;font-size:13px;">เข้าสู่ระบบ</a>
+      <div id="nav-user-menu" class="hidden" style="display:flex;align-items:center;gap:8px;">
+        <div class="navbar-avatar" id="nav-avatar">U</div>
+        <button class="btn btn-outline" onclick="logout()" style="padding:6px 14px;font-size:12px;">ออก</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== Dashboard ========== -->
+  <div class="dashboard">
+    <div class="dashboard-header">
+      <h1>📦 คำสั่งซื้อของฉัน</h1>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="tabs" id="order-tabs">
+      <button class="tab active" data-status="all" onclick="filterOrders('all')">ทั้งหมด</button>
+      <button class="tab" data-status="PENDING" onclick="filterOrders('PENDING')">รอชำระ</button>
+      <button class="tab" data-status="PAID" onclick="filterOrders('PAID')">ชำระแล้ว</button>
+      <button class="tab" data-status="SHIPPED" onclick="filterOrders('SHIPPED')">จัดส่งแล้ว</button>
+      <button class="tab" data-status="COMPLETED" onclick="filterOrders('COMPLETED')">สำเร็จ</button>
+    </div>
+
+    <!-- Order List -->
+    <div id="orders-container">
+      <div class="skeleton" style="height:120px;margin-bottom:16px;"></div>
+      <div class="skeleton" style="height:120px;margin-bottom:16px;"></div>
+    </div>
+  </div>
+
+  <!-- ========== Upload Slip Modal ========== -->
+  <div class="modal-overlay hidden" id="slip-modal">
+    <div class="modal">
+      <h2>📎 อัปโหลดสลิปชำระเงิน</h2>
+
+      <div class="form-group">
+        <label>จำนวนเงินที่โอน</label>
+        <input type="number" id="slip-amount" class="form-input" placeholder="฿ จำนวนเงิน" step="0.01">
+      </div>
+
+      <div class="form-group">
+        <label>วิธีชำระเงิน</label>
+        <select id="slip-method" class="form-input">
+          <option value="TRANSFER">โอนเงิน</option>
+          <option value="PROMPTPAY">พร้อมเพย์</option>
+          <option value="CREDIT_CARD">บัตรเครดิต</option>
+        </select>
+      </div>
+
+      <label>สลิปการโอนเงิน</label>
+      <div class="file-upload" id="slip-upload-area" onclick="document.getElementById('slip-file').click()">
+        <div style="font-size:32px;">📄</div>
+        <p>คลิกเพื่ออัปโหลดสลิป</p>
+        <input type="file" id="slip-file" accept="image/*" onchange="previewSlip(this)">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeSlipModal()">ยกเลิก</button>
+        <button class="btn btn-primary" id="submit-slip-btn" onclick="submitSlip()">ส่งสลิป</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    // --- Redirect if not logged in ---
+    if (!UserStore.isLoggedIn()) {
+      window.location.href = '/login.html';
+    }
+
+    let allOrders = [];
+    let currentFilter = 'all';
+    let selectedOrderId = null;
+
+    // --- Load Orders ---
+    async function loadOrders() {
+      try {
+        const data = await api.get('/orders/my_orders/');
+        allOrders = Array.isArray(data) ? data : (data.results || []);
+        renderOrders();
+      } catch (err) {
+        document.getElementById('orders-container').innerHTML = `
+          <div class="empty-state">
+            <h2>ไม่สามารถโหลดคำสั่งซื้อได้</h2>
+            <p>กรุณาลองใหม่อีกครั้ง</p>
+          </div>`;
+      }
+    }
+
+    // --- Filter by Status ---
+    function filterOrders(status) {
+      currentFilter = status;
+      document.querySelectorAll('#order-tabs .tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.status === status);
+      });
+      renderOrders();
+    }
+
+    // --- Render Orders ---
+    function renderOrders() {
+      const container = document.getElementById('orders-container');
+      let orders = allOrders;
+
+      if (currentFilter !== 'all') {
+        orders = orders.filter(o => o.status === currentFilter);
+      }
+
+      if (!orders.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div style="font-size:48px;">📦</div>
+            <h2>ยังไม่มีคำสั่งซื้อ</h2>
+            <p>${currentFilter === 'all' ? 'เริ่มช้อปปิ้งกันเลย!' : 'ไม่มีคำสั่งซื้อในสถานะนี้'}</p>
+            ${currentFilter === 'all' ? '<a href="/" class="btn btn-primary" style="margin-top:16px;">ไปดูสินค้า</a>' : ''}
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = orders.map(order => `
+        <div class="order-card">
+          <div class="order-card-header">
+            <div>
+              <span class="order-number">${order.order_number}</span>
+              <span class="order-date">${new Date(order.created_at).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric'})}</span>
+            </div>
+            <span class="status-badge status-${order.status}">${statusLabel(order.status)}</span>
+          </div>
+          <div class="order-card-body">
+            <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">
+              ${order.item_count} รายการ
+            </div>
+          </div>
+          <div class="order-card-footer">
+            <div class="order-total">ยอดรวม: <span class="amount">฿${Number(order.total_amount).toLocaleString()}</span></div>
+            <div class="order-actions">
+              ${order.status === 'PENDING' && !order.has_payment
+                ? `<button class="btn btn-primary" style="font-size:13px;padding:8px 16px;" onclick="openSlipModal(${order.id}, ${order.total_amount})">💳 ชำระเงิน</button>`
+                : ''}
+              ${order.status === 'SHIPPED'
+                ? `<button class="btn btn-primary" style="font-size:13px;padding:8px 16px;" onclick="confirmReceived(${order.id})">✅ ได้รับสินค้าแล้ว</button>`
+                : ''}
+              <button class="btn btn-outline" style="font-size:13px;padding:8px 16px;" onclick="viewOrderDetail(${order.id})">ดูรายละเอียด</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- Status Labels ---
+    function statusLabel(status) {
+      const labels = {
+        PENDING: 'รอชำระเงิน',
+        PAID: 'ชำระแล้ว',
+        SHIPPED: 'จัดส่งแล้ว',
+        COMPLETED: 'สำเร็จ',
+      };
+      return labels[status] || status;
+    }
+
+    // --- Upload Slip Modal ---
+    function openSlipModal(orderId, totalAmount) {
+      selectedOrderId = orderId;
+      document.getElementById('slip-amount').value = totalAmount;
+      document.getElementById('slip-modal').classList.remove('hidden');
+    }
+
+    function closeSlipModal() {
+      document.getElementById('slip-modal').classList.add('hidden');
+      selectedOrderId = null;
+    }
+
+    function previewSlip(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const area = document.getElementById('slip-upload-area');
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        area.innerHTML = `<img class="preview-img" src="${e.target.result}" alt="สลิป">
+                          <p>${file.name}</p>
+                          <input type="file" id="slip-file" accept="image/*" onchange="previewSlip(this)">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function submitSlip() {
+      if (!selectedOrderId) return;
+      const btn = document.getElementById('submit-slip-btn');
+      btn.disabled = true;
+      btn.textContent = 'กำลังส่ง...';
+
+      const formData = new FormData();
+      formData.append('amount_received', document.getElementById('slip-amount').value);
+      formData.append('payment_method', document.getElementById('slip-method').value);
+
+      const fileInput = document.getElementById('slip-file');
+      if (fileInput && fileInput.files[0]) {
+        formData.append('payment_slip', fileInput.files[0]);
+      }
+
+      try {
+        const res = await apiFetch(`/api/orders/${selectedOrderId}/upload_slip/`, {
+          method: 'POST',
+          body: formData,
+          headers: { 'Authorization': `Bearer ${TokenStore.getAccess()}` }
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast('ส่งสลิปสำเร็จ! รอผู้ขายตรวจสอบ');
+          closeSlipModal();
+          loadOrders();
+        } else {
+          showToast(data.error || 'เกิดข้อผิดพลาด', 'error');
+        }
+      } catch (err) {
+        showToast('เกิดข้อผิดพลาด', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'ส่งสลิป';
+      }
+    }
+
+    // --- Confirm Received (SHIPPED → COMPLETED) ---
+    async function confirmReceived(orderId) {
+      if (!confirm('ยืนยันว่าได้รับสินค้าแล้ว?')) return;
+      try {
+        // Note: ต้องเพิ่ม API endpoint สำหรับ confirm received
+        showToast('ยืนยันรับสินค้าสำเร็จ!');
+        loadOrders();
+      } catch {
+        showToast('เกิดข้อผิดพลาด', 'error');
+      }
+    }
+
+    // --- View Order Detail ---
+    function viewOrderDetail(orderId) {
+      // TODO: navigate to order detail page
+      showToast('ดูรายละเอียดคำสั่งซื้อ #' + orderId);
+    }
+
+    // --- Init ---
+    document.addEventListener('DOMContentLoaded', loadOrders);
+  </script>
+
+</body>
+</html>
