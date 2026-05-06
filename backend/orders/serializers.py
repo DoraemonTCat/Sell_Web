@@ -92,13 +92,14 @@ class OrderListSerializer(serializers.ModelSerializer):
     buyer_name = serializers.CharField(source='buyer.username', read_only=True)
     item_count = serializers.SerializerMethodField()
     has_payment = serializers.SerializerMethodField()
+    payment_slip_url = serializers.SerializerMethodField()
 
     class Meta:
         model = SaleOrder
         fields = [
             'id', 'order_number', 'buyer_name',
             'total_amount', 'status', 'item_count',
-            'has_payment', 'created_at'
+            'has_payment', 'payment_slip_url', 'created_at'
         ]
 
     def get_item_count(self, obj):
@@ -106,6 +107,11 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     def get_has_payment(self, obj):
         return hasattr(obj, 'payment')
+
+    def get_payment_slip_url(self, obj):
+        if hasattr(obj, 'payment') and obj.payment.payment_slip:
+            return obj.payment.payment_slip.url
+        return None
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):

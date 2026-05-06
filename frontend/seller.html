@@ -170,8 +170,9 @@
         <div class="tabs" id="seller-order-tabs" style="margin-bottom:16px;">
           <button class="tab active" data-status="all" onclick="filterSellerOrders('all')">ทั้งหมด</button>
           <button class="tab" data-status="PENDING" onclick="filterSellerOrders('PENDING')">รอชำระ</button>
-          <button class="tab" data-status="PAID" onclick="filterSellerOrders('PAID')">รอตรวจสลิป</button>
+          <button class="tab" data-status="PAID" onclick="filterSellerOrders('PAID')">ชำระแล้ว</button>
           <button class="tab" data-status="SHIPPED" onclick="filterSellerOrders('SHIPPED')">จัดส่งแล้ว</button>
+          <button class="tab" data-status="COMPLETED" onclick="filterSellerOrders('COMPLETED')">สำเร็จ</button>
         </div>
         <div id="seller-orders-container"></div>
       </div>
@@ -248,6 +249,18 @@
         <button class="btn btn-outline" onclick="closeDeliveryModal()">ปิด</button>
         <button class="btn btn-primary" id="create-slip-btn" onclick="createDeliverySlip()">สร้างใบส่งของ</button>
         <button class="btn btn-outline hidden" id="print-slip-btn" onclick="window.print()">🖨️ พิมพ์</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== Slip Viewer Modal ========== -->
+  <div class="modal-overlay hidden" id="slip-viewer-modal">
+    <div class="modal" style="max-width:500px;text-align:center;">
+      <h2>🧾 สลิปชำระเงิน</h2>
+      <img id="slip-viewer-img" src="" alt="สลิปชำระเงิน" style="max-width:100%;max-height:70vh;border-radius:8px;margin:16px 0;object-fit:contain;">
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="document.getElementById('slip-viewer-modal').classList.add('hidden')">ปิด</button>
+        <a id="slip-viewer-link" href="" target="_blank" class="btn btn-primary">เปิดรูปเต็ม</a>
       </div>
     </div>
   </div>
@@ -469,12 +482,17 @@
           <div class="order-card-footer">
             <div class="order-total">฿${Number(o.total_amount).toLocaleString()}</div>
             <div class="order-actions">
-              ${o.status === 'PAID' ? `
-                <button class="btn btn-primary" style="font-size:13px;padding:8px 14px;" onclick="verifyPayment(${o.id}, 'VERIFIED')">✅ Verify</button>
-                <button class="btn btn-outline" style="font-size:13px;padding:8px 14px;color:var(--color-error);" onclick="verifyPayment(${o.id}, 'REJECTED')">❌ Reject</button>
+              ${o.payment_slip_url ? `
+                <button class="btn btn-outline" style="font-size:13px;padding:8px 14px;" onclick="viewSlip('${o.payment_slip_url}')">🧾 ดูสลิป</button>
               ` : ''}
               ${o.status === 'PAID' ? `
-                <button class="btn btn-outline" style="font-size:13px;padding:8px 14px;" onclick="openDeliveryModal(${o.id})">🚚 ใบส่งของ</button>
+                <button class="btn btn-primary" style="font-size:13px;padding:8px 14px;" onclick="openDeliveryModal(${o.id})">🚚 สร้างใบส่งของ</button>
+              ` : ''}
+              ${o.status === 'SHIPPED' ? `
+                <span style="font-size:13px;color:var(--color-success);">✅ จัดส่งแล้ว</span>
+              ` : ''}
+              ${o.status === 'COMPLETED' ? `
+                <span style="font-size:13px;color:var(--color-success);">🎉 สำเร็จ</span>
               ` : ''}
             </div>
           </div>
@@ -482,15 +500,11 @@
       `).join('');
     }
 
-    // ===== Verify Payment =====
-    async function verifyPayment(orderId, action) {
-      const label = action === 'VERIFIED' ? 'ยืนยัน' : 'ปฏิเสธ';
-      if (!confirm(`${label}สลิปชำระเงินนี้?`)) return;
-      try {
-        const data = await api.post(`/orders/${orderId}/verify_payment/`, { action, note: '' });
-        showToast(data.message || `${label}สำเร็จ`);
-        loadSellerOrders();
-      } catch { showToast('เกิดข้อผิดพลาด', 'error'); }
+    // ===== View Payment Slip =====
+    function viewSlip(url) {
+      document.getElementById('slip-viewer-img').src = url;
+      document.getElementById('slip-viewer-link').href = url;
+      document.getElementById('slip-viewer-modal').classList.remove('hidden');
     }
 
     // ===== Delivery Slip =====

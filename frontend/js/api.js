@@ -107,7 +107,12 @@ const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    return res.json();
+    const data = await res.json();
+    if (!res.ok) {
+      const errMsg = data.detail || data.username?.[0] || data.address?.[0] || JSON.stringify(data);
+      throw new Error(errMsg);
+    }
+    return data;
   },
 
   async delete(endpoint) {
