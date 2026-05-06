@@ -104,6 +104,17 @@ function updateNavbarAuth() {
 }
 
 // --- Check auth on page load ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   updateNavbarAuth();
+
+  // Sync user data จาก API (ถ้า login อยู่) เพื่ออัปเดต role + ข้อมูลใหม่
+  if (UserStore.isLoggedIn()) {
+    try {
+      const freshUser = await api.get('/auth/profile/');
+      if (freshUser && freshUser.id) {
+        UserStore.set(freshUser);
+        updateNavbarAuth(); // อัปเดต navbar ใหม่หลัง sync
+      }
+    } catch (e) { /* token expired → ไม่ต้องทำอะไร */ }
+  }
 });
