@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,69 +12,156 @@
   <link rel="stylesheet" href="/css/dashboard.css">
   <style>
     /* --- Seller-specific styles --- */
-    .seller-tabs { margin-bottom: 0; }
-    .seller-content { padding-top: 24px; }
+    .seller-tabs {
+      margin-bottom: 0;
+    }
+
+    .seller-content {
+      padding-top: 24px;
+    }
 
     /* Product Form */
-    .product-form { max-width: 600px; }
-    .product-form .form-group { margin-bottom: 20px; }
-    .product-form textarea { min-height: 100px; resize: vertical; }
+    .product-form {
+      max-width: 600px;
+    }
+
+    .product-form .form-group {
+      margin-bottom: 20px;
+    }
+
+    .product-form textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
 
     /* Product Table */
-    .product-table { width: 100%; border-collapse: collapse; }
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
     .product-table th {
-      text-align: left; padding: 10px 12px; font-size: 13px;
-      color: var(--color-text-secondary); border-bottom: 2px solid var(--color-border);
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      border-bottom: 2px solid var(--color-border);
     }
+
     .product-table td {
-      padding: 12px; border-bottom: 1px solid var(--color-border-light);
-      font-size: 14px; vertical-align: middle;
+      padding: 12px;
+      border-bottom: 1px solid var(--color-border-light);
+      font-size: 14px;
+      vertical-align: middle;
     }
-    .product-table tr:hover { background: var(--color-bg-secondary); }
+
+    .product-table tr:hover {
+      background: var(--color-bg-secondary);
+    }
+
     .product-table img {
-      width: 44px; height: 44px; border-radius: 4px; object-fit: cover;
+      width: 44px;
+      height: 44px;
+      border-radius: 4px;
+      object-fit: cover;
     }
-    .product-table .actions { display: flex; gap: 6px; }
-    .product-table .actions button { padding: 6px 10px; font-size: 12px; }
+
+    .product-table .actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .product-table .actions button {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
 
     /* Stock Modal */
-    .stock-modal-info { margin-bottom: 16px; padding: 12px;
-      background: var(--color-bg-secondary); border-radius: 8px; }
-    .stock-modal-info strong { display: block; font-size: 15px; }
-    .stock-modal-info span { font-size: 13px; color: var(--color-text-secondary); }
+    .stock-modal-info {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--color-bg-secondary);
+      border-radius: 8px;
+    }
+
+    .stock-modal-info strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    .stock-modal-info span {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
 
     /* Delivery Slip Print */
     .delivery-slip-preview {
-      border: 1px solid var(--color-border); border-radius: 8px;
-      padding: 24px; max-width: 500px; margin: 0 auto;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 500px;
+      margin: 0 auto;
     }
-    .delivery-slip-preview h3 { text-align: center; margin-bottom: 16px; }
-    .slip-row { display: flex; justify-content: space-between; padding: 4px 0;
-      font-size: 14px; border-bottom: 1px dotted var(--color-border-light); }
-    .slip-row:last-child { border-bottom: none; font-weight: 600; }
+
+    .delivery-slip-preview h3 {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .slip-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 14px;
+      border-bottom: 1px dotted var(--color-border-light);
+    }
+
+    .slip-row:last-child {
+      border-bottom: none;
+      font-weight: 600;
+    }
 
     @media print {
-      .navbar, .tabs, .dashboard-header, .no-print { display: none !important; }
-      .delivery-slip-preview { border: none; }
+
+      .navbar,
+      .tabs,
+      .dashboard-header,
+      .no-print {
+        display: none !important;
+      }
+
+      .delivery-slip-preview {
+        border: none;
+      }
     }
 
     @media (max-width: 568px) {
-      .product-table { font-size: 12px; }
-      .product-table th:nth-child(3), .product-table td:nth-child(3),
-      .product-table th:nth-child(4), .product-table td:nth-child(4) { display: none; }
+      .product-table {
+        font-size: 12px;
+      }
+
+      .product-table th:nth-child(3),
+      .product-table td:nth-child(3),
+      .product-table th:nth-child(4),
+      .product-table td:nth-child(4) {
+        display: none;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <!-- ========== Navbar ========== -->
   <nav class="navbar">
     <a href="/" class="navbar-logo">
       <div class="navbar-logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>
+        <svg viewBox="0 0 24 24">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+        </svg>
       </div>
       <div>
-        <div class="navbar-logo-text">SellWeb</div>
+        <div class="navbar-logo-text">Storemesh</div>
         <div class="navbar-logo-sub">MARKETPLACE</div>
       </div>
     </a>
@@ -84,7 +172,8 @@
     </ul>
     <div class="navbar-spacer"></div>
     <div class="navbar-user">
-      <a href="/login.html" class="btn btn-primary" id="nav-login-btn" style="padding:8px 20px;font-size:13px;">เข้าสู่ระบบ</a>
+      <a href="/login.html" class="btn btn-primary" id="nav-login-btn"
+        style="padding:8px 20px;font-size:13px;">เข้าสู่ระบบ</a>
       <div id="nav-user-menu" class="hidden" style="display:flex;align-items:center;gap:8px;">
         <div class="navbar-avatar" id="nav-avatar">U</div>
         <button class="btn btn-outline" onclick="logout()" style="padding:6px 14px;font-size:12px;">ออก</button>
@@ -96,11 +185,13 @@
   <div class="dashboard">
     <div class="dashboard-header">
       <h1>🏪 ร้านของฉัน</h1>
-      <button class="btn btn-primary" onclick="showSection('add-product')" style="font-size:13px;">+ เพิ่มสินค้า</button>
+      <button class="btn btn-primary" onclick="showSection('add-product')" style="font-size:13px;">+
+        เพิ่มสินค้า</button>
     </div>
 
     <!-- Stats Cards -->
-    <div id="stats-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;">
+    <div id="stats-cards"
+      style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;">
       <div style="background:var(--color-bg-secondary);border-radius:8px;padding:16px;text-align:center;">
         <div style="font-size:24px;font-weight:700;color:var(--color-primary);" id="stat-products">-</div>
         <div style="font-size:13px;color:var(--color-text-secondary);">📦 สินค้า</div>
@@ -121,7 +212,8 @@
 
     <!-- Section Tabs -->
     <div class="tabs seller-tabs">
-      <button class="tab active" data-section="my-products" onclick="showSection('my-products')">📦 สินค้าของฉัน</button>
+      <button class="tab active" data-section="my-products" onclick="showSection('my-products')">📦
+        สินค้าของฉัน</button>
       <button class="tab" data-section="seller-orders" onclick="showSection('seller-orders')">📋 ออเดอร์</button>
       <button class="tab" data-section="analytics" onclick="showSection('analytics')">📊 วิเคราะห์</button>
       <button class="tab" data-section="add-product" onclick="showSection('add-product')">➕ เพิ่มสินค้า</button>
@@ -142,7 +234,9 @@
             </tr>
           </thead>
           <tbody id="my-products-body">
-            <tr><td colspan="5" style="text-align:center;padding:40px;">กำลังโหลด...</td></tr>
+            <tr>
+              <td colspan="5" style="text-align:center;padding:40px;">กำลังโหลด...</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -160,7 +254,9 @@
             </tr>
           </thead>
           <tbody id="potential-customers-body">
-            <tr><td colspan="4" style="text-align:center;padding:40px;">กำลังโหลด...</td></tr>
+            <tr>
+              <td colspan="4" style="text-align:center;padding:40px;">กำลังโหลด...</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -208,7 +304,8 @@
           </div>
           <div style="display:flex;gap:12px;">
             <button type="submit" class="btn btn-primary" id="save-product-btn">บันทึกสินค้า</button>
-            <button type="button" class="btn btn-outline" onclick="resetForm(); showSection('my-products')">ยกเลิก</button>
+            <button type="button" class="btn btn-outline"
+              onclick="resetForm(); showSection('my-products')">ยกเลิก</button>
           </div>
         </form>
       </div>
@@ -257,9 +354,11 @@
   <div class="modal-overlay hidden" id="slip-viewer-modal">
     <div class="modal" style="max-width:500px;text-align:center;">
       <h2>🧾 สลิปชำระเงิน</h2>
-      <img id="slip-viewer-img" src="" alt="สลิปชำระเงิน" style="max-width:100%;max-height:70vh;border-radius:8px;margin:16px 0;object-fit:contain;">
+      <img id="slip-viewer-img" src="" alt="สลิปชำระเงิน"
+        style="max-width:100%;max-height:70vh;border-radius:8px;margin:16px 0;object-fit:contain;">
       <div class="modal-actions">
-        <button class="btn btn-outline" onclick="document.getElementById('slip-viewer-modal').classList.add('hidden')">ปิด</button>
+        <button class="btn btn-outline"
+          onclick="document.getElementById('slip-viewer-modal').classList.add('hidden')">ปิด</button>
         <a id="slip-viewer-link" href="" target="_blank" class="btn btn-primary">เปิดรูปเต็ม</a>
       </div>
     </div>
@@ -463,7 +562,7 @@
         return;
       }
 
-      const statusLabels = { PENDING:'รอชำระเงิน', PAID:'รอตรวจสลิป', SHIPPED:'จัดส่งแล้ว', COMPLETED:'สำเร็จ' };
+      const statusLabels = { PENDING: 'รอชำระเงิน', PAID: 'รอตรวจสลิป', SHIPPED: 'จัดส่งแล้ว', COMPLETED: 'สำเร็จ' };
 
       container.innerHTML = orders.map(o => `
         <div class="order-card">
@@ -557,7 +656,7 @@
       finally { btn.disabled = false; btn.textContent = 'สร้างใบส่งของ'; }
     }
 
-    function escapeHtml(t) { const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
+    function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; }
 
     // ===== Seller Stats =====
     async function loadStats() {
@@ -599,4 +698,5 @@
   </script>
 
 </body>
+
 </html>

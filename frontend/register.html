@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/login.css">
 </head>
+
 <body>
 
   <div class="login-page">
@@ -17,7 +19,7 @@
       <div class="login-branding-content">
         <div class="phone-mockup">
           <div class="phone-mockup-header">
-            <span>☰ SellWeb</span>
+            <span>☰ Storemesh</span>
             <span>🔍</span>
           </div>
           <div class="phone-mockup-body">
@@ -27,7 +29,7 @@
             <div class="phone-mockup-item"></div>
           </div>
         </div>
-        <div class="branding-title">SellWeb</div>
+        <div class="branding-title">Storemesh</div>
         <div class="branding-subtitle">กรอกข้อมูลเพิ่มเติมเพื่อเริ่มใช้งาน</div>
       </div>
     </div>
@@ -41,7 +43,8 @@
         <form id="register-form" onsubmit="handleRegister(event)">
           <div class="form-group">
             <label for="reg-username">ชื่อผู้ใช้ (username)</label>
-            <input type="text" id="reg-username" class="form-input" placeholder="เช่น somchai_shop" required minlength="3">
+            <input type="text" id="reg-username" class="form-input" placeholder="เช่น somchai_shop" required
+              minlength="3">
           </div>
           <div class="form-group">
             <label for="reg-email">อีเมล</label>
@@ -50,9 +53,11 @@
           </div>
           <div class="form-group">
             <label for="reg-address">ที่อยู่จัดส่ง</label>
-            <textarea id="reg-address" class="form-input" rows="3" placeholder="บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์" required></textarea>
+            <textarea id="reg-address" class="form-input" rows="3"
+              placeholder="บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์" required></textarea>
           </div>
-          <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;" id="register-btn">บันทึกข้อมูล</button>
+          <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;"
+            id="register-btn">บันทึกข้อมูล</button>
         </form>
 
         <div class="login-footer">
@@ -91,8 +96,8 @@
           setTimeout(() => window.location.href = '/', 1000);
         } else {
           const errMsg = data.username ? data.username[0]
-                       : data.address ? data.address[0]
-                       : data.detail || JSON.stringify(data);
+            : data.address ? data.address[0]
+              : data.detail || JSON.stringify(data);
           showToast(errMsg, 'error');
           console.error('Register error:', data);
         }
@@ -112,4 +117,5 @@
   </script>
 
 </body>
+
 </html>

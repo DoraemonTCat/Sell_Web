@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>คำสั่งซื้อของฉัน — Sell Web</title>
+  <title>คำสั่งซื้อของฉัน — Storemesh</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/navbar.css">
   <link rel="stylesheet" href="/css/dashboard.css">
 </head>
+
 <body>
 
   <!-- ========== Navbar ========== -->
   <nav class="navbar">
     <a href="/" class="navbar-logo">
       <div class="navbar-logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>
+        <svg viewBox="0 0 24 24">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+        </svg>
       </div>
       <div>
-        <div class="navbar-logo-text">SellWeb</div>
+        <div class="navbar-logo-text">Storemesh</div>
         <div class="navbar-logo-sub">MARKETPLACE</div>
       </div>
     </a>
@@ -30,7 +34,8 @@
     </ul>
     <div class="navbar-spacer"></div>
     <div class="navbar-user">
-      <a href="/login.html" class="btn btn-primary" id="nav-login-btn" style="padding:8px 20px;font-size:13px;">เข้าสู่ระบบ</a>
+      <a href="/login.html" class="btn btn-primary" id="nav-login-btn"
+        style="padding:8px 20px;font-size:13px;">เข้าสู่ระบบ</a>
       <div id="nav-user-menu" class="hidden" style="display:flex;align-items:center;gap:8px;">
         <div class="navbar-avatar" id="nav-avatar">U</div>
         <button class="btn btn-outline" onclick="logout()" style="padding:6px 14px;font-size:12px;">ออก</button>
@@ -155,7 +160,7 @@
           <div class="order-card-header">
             <div>
               <span class="order-number">${order.order_number}</span>
-              <span class="order-date">${new Date(order.created_at).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric'})}</span>
+              <span class="order-date">${new Date(order.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             </div>
             <span class="status-badge status-${order.status}">${statusLabel(order.status)}</span>
           </div>
@@ -168,11 +173,11 @@
             <div class="order-total">ยอดรวม: <span class="amount">฿${Number(order.total_amount).toLocaleString()}</span></div>
             <div class="order-actions">
               ${order.status === 'PENDING' && !order.has_payment
-                ? `<button class="btn btn-primary" style="font-size:13px;padding:8px 16px;" onclick="openSlipModal(${order.id}, ${order.total_amount})">💳 ชำระเงิน</button>`
-                : ''}
+          ? `<button class="btn btn-primary" style="font-size:13px;padding:8px 16px;" onclick="openSlipModal(${order.id}, ${order.total_amount})">💳 ชำระเงิน</button>`
+          : ''}
               ${order.status === 'SHIPPED'
-                ? `<button class="btn btn-primary" style="font-size:13px;padding:8px 16px;" onclick="confirmReceived(${order.id})">✅ ได้รับสินค้าแล้ว</button>`
-                : ''}
+          ? `<button class="btn btn-primary" style="font-size:13px;padding:8px 16px;" onclick="confirmReceived(${order.id})">✅ ได้รับสินค้าแล้ว</button>`
+          : ''}
               <button class="btn btn-outline" style="font-size:13px;padding:8px 16px;" onclick="viewOrderDetail(${order.id})">ดูรายละเอียด</button>
             </div>
           </div>
@@ -282,4 +287,5 @@
   </script>
 
 </body>
+
 </html>
