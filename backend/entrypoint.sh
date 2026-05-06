@@ -1,7 +1,10 @@
 #!/bin/sh
 # ===========================================
 # Backend Entrypoint Script
-# Runs migrations and starts the server
+# 1. Wait for PostgreSQL
+# 2. Create migration files (if needed)
+# 3. Apply migrations
+# 4. Start the server
 # ===========================================
 
 set -e
@@ -17,6 +20,9 @@ while ! python -c "import psycopg2; psycopg2.connect(
     sleep 1
 done
 echo "PostgreSQL is ready!"
+
+echo "Creating migrations..."
+python manage.py makemigrations --noinput
 
 echo "Running migrations..."
 python manage.py migrate --noinput

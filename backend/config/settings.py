@@ -25,11 +25,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_filters',
-    # Local apps (will be added incrementally)
-    # 'accounts',
-    # 'products',
-    # 'orders',
-    # 'analytics',
+    # Local apps
+    'accounts',
+    'products',
+    'orders',
+    'analytics',
 ]
 
 # --- Middleware ---
@@ -97,6 +97,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- Custom User Model ---
+# Must be set before first migration
+AUTH_USER_MODEL = 'accounts.User'
 
 # --- Django REST Framework ---
 REST_FRAMEWORK = {

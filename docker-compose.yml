@@ -59,9 +59,10 @@ services:
 
   # --- Celery Worker ---
   # Background task processor (stock deduction on delivery)
-  # Uses same image as backend
+  # Uses same image as backend, but skips entrypoint (no migrations)
   celery:
     build: ./backend
+    entrypoint: []
     command: celery -A config worker -l info
     volumes:
       - ./backend:/app
@@ -69,10 +70,7 @@ services:
     env_file:
       - .env
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - backend
 
   # --- Frontend: React + Vite ---
   # SPA with Google OAuth, product listing, buyer/seller dashboards
@@ -91,7 +89,7 @@ services:
   nginx:
     build: ./nginx
     ports:
-      - "80:80"
+      - "3000:80"
     volumes:
       - media_data:/usr/share/nginx/media
       - static_data:/usr/share/nginx/static
