@@ -43,12 +43,14 @@ async function handleGoogleCallback(response) {
     if (data.access) {
       TokenStore.setTokens(data.access, data.refresh);
       UserStore.set(data.user);
-      showToast('เข้าสู่ระบบสำเร็จ!');
 
-      // ถ้าเป็น user ใหม่ → ไปหน้า register
       if (data.is_new_user) {
+        // เก็บ role ที่เลือกไว้ (buyer/seller) เพื่อใช้ใน register.html
+        const selectedRole = window.selectedRole || 'buyer';
+        localStorage.setItem('pending_role', selectedRole);
         window.location.href = '/register.html';
       } else {
+        showToast('เข้าสู่ระบบสำเร็จ!');
         window.location.href = '/';
       }
     } else {
@@ -64,6 +66,7 @@ async function handleGoogleCallback(response) {
 function logout() {
   TokenStore.clear();
   UserStore.clear();
+  localStorage.removeItem('pending_role');
   showToast('ออกจากระบบแล้ว');
   window.location.href = '/login.html';
 }

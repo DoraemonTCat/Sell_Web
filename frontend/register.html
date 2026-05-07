@@ -40,6 +40,16 @@
         <h1 class="login-form-title">สมัครสมาชิก</h1>
         <p class="login-form-subtitle">กรอกข้อมูลเพื่อเริ่มต้นใช้งาน</p>
 
+        <!-- Role Selector (pre-filled from login page selection) -->
+        <div class="form-group">
+          <label>บทบาทของฉัน</label>
+          <div class="role-toggle" id="reg-role-toggle">
+            <button class="active" data-role="buyer" onclick="selectRegRole('buyer')">🛒 ผู้ซื้อ</button>
+            <button data-role="seller" onclick="selectRegRole('seller')">🏪 ผู้ขาย</button>
+          </div>
+          <input type="hidden" id="reg-role" value="buyer">
+        </div>
+
         <form id="register-form" onsubmit="handleRegister(event)">
           <div class="form-group">
             <label for="reg-username">ชื่อผู้ใช้ (username)</label>
@@ -70,11 +80,27 @@
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
   <script>
+    // Redirect if not logged in
+    if (!UserStore.isLoggedIn()) {
+      window.location.href = '/login.html';
+    }
+
     // Pre-fill email from stored user
     const user = UserStore.get();
     if (user) {
       document.getElementById('reg-email').value = user.email || '';
       document.getElementById('reg-username').value = user.username || '';
+    }
+
+    // Pre-select role from login page choice (stored in localStorage)
+    const pendingRole = localStorage.getItem('pending_role') || 'buyer';
+    selectRegRole(pendingRole);
+
+    function selectRegRole(role) {
+      document.getElementById('reg-role').value = role;
+      document.querySelectorAll('#reg-role-toggle button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.role === role);
+      });
     }
 
     async function handleRegister(e) {
@@ -83,21 +109,30 @@
       btn.disabled = true;
       btn.textContent = 'กำลังบันทึก...';
 
+      const role = document.getElementById('reg-role').value;
+
       try {
         const data = await api.patch('/auth/register/', {
           username: document.getElementById('reg-username').value,
           address: document.getElementById('reg-address').value,
+          role: role,
         });
         console.log('Register response:', data);
 
         if (data.id) {
           UserStore.set(data);
+          localStorage.removeItem('pending_role');
           showToast('สมัครสมาชิกสำเร็จ!');
-          setTimeout(() => window.location.href = '/', 1000);
+
+          // ผู้ขาย → ไปหน้า seller dashboard | ผู้ซื้อ → ไปหน้าหลัก
+          setTimeout(() => {
+            window.location.href = data.role === 'seller' ? '/seller.html' : '/';
+          }, 1000);
         } else {
           const errMsg = data.username ? data.username[0]
             : data.address ? data.address[0]
-              : data.detail || JSON.stringify(data);
+              : data.role ? data.role[0]
+                : data.detail || JSON.stringify(data);
           showToast(errMsg, 'error');
           console.error('Register error:', data);
         }
@@ -108,11 +143,6 @@
         btn.disabled = false;
         btn.textContent = 'บันทึกข้อมูล';
       }
-    }
-
-    // Redirect if not logged in
-    if (!UserStore.isLoggedIn()) {
-      window.location.href = '/login.html';
     }
   </script>
 

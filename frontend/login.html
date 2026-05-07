@@ -44,55 +44,52 @@
     <div class="login-form-container">
       <div class="login-form-box">
         <h1 class="login-form-title">เข้าสู่ระบบ</h1>
-        <p class="login-form-subtitle">เลือกบทบาทและเข้าสู่ระบบเพื่อเริ่มต้น</p>
+        <p class="login-form-subtitle">ยินดีต้อนรับสู่ Storemesh</p>
 
-        <!-- Role Toggle: ผู้ซื้อ / ผู้ขาย -->
-        <div class="role-toggle" id="role-toggle">
-          <button class="active" data-role="buyer" onclick="setRole('buyer')">🛒 ผู้ซื้อ</button>
-          <button data-role="seller" onclick="setRole('seller')">🏪 ผู้ขาย</button>
-        </div>
+        <!-- Role hint -->
+        <p id="role-hint" style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px;min-height:18px;">
+        </p>
 
         <div class="divider"><span>Google Account</span></div>
 
         <!-- Google Sign-In Button -->
         <div id="google-signin-btn" style="margin-bottom: 16px;"></div>
 
-
       </div>
+    </div>
 
-      <!-- Scripts -->
-      <script src="/js/api.js"></script>
-      <script src="/js/auth.js"></script>
-      <script>
-        // --- Role Toggle ---
-        let selectedRole = 'buyer';
+    <!-- Scripts -->
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+      // --- Role Toggle ---
+      // window.selectedRole is read by handleGoogleCallback in auth.js
+      window.selectedRole = 'buyer';
 
-        function setRole(role) {
-          selectedRole = role;
-          document.querySelectorAll('#role-toggle button').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.role === role);
-          });
-        }
+      const roleHints = {
 
-        // --- Email Login (demo — backend ยังไม่ support email auth) ---
-        function handleEmailLogin(e) {
-          e.preventDefault();
-          showToast('กรุณาใช้ Google Sign-In เพื่อเข้าสู่ระบบ', 'error');
-        }
+        seller: 'สำหรับร้านค้าที่ต้องการขายสินค้า',
+      };
 
-        // --- Manual Google Login (fallback for when GSI lib doesn't load) ---
-        function manualGoogleLogin() {
-          showToast('กรุณาตั้งค่า Google Client ID ก่อน', 'error');
-        }
+      function setRole(role) {
+        window.selectedRole = role;
+        document.querySelectorAll('#role-toggle button').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.role === role);
+        });
+        document.getElementById('role-hint').textContent = roleHints[role] || '';
+      }
 
-        // --- Redirect if already logged in ---
-        if (UserStore.isLoggedIn()) {
-          window.location.href = '/';
-        }
+      // Set initial hint
+      setRole('buyer');
 
-        // --- Init Google Auth ---
-        window.addEventListener('load', initGoogleAuth);
-      </script>
+      // --- Redirect if already logged in ---
+      if (UserStore.isLoggedIn()) {
+        window.location.href = '/';
+      }
+
+      // --- Init Google Auth ---
+      window.addEventListener('load', initGoogleAuth);
+    </script>
 
 </body>
 
